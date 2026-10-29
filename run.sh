@@ -94,6 +94,10 @@ $CXX -O2 -std=c++17 -ffp-contract=off -DNDEBUG -Wall -Wno-unused-function -Wno-u
 
 $PY gen_data.py "$OUT/dc" 1000 4000
 $PY gen_data.py "$OUT/tight" 1000 4000
+# A run's GPU rows exist only if its own GPU pass produced them: drop any
+# carried over (a committed results/ directory) so the gate never compares this
+# run's CPU numbers against another machine's GPU numbers.
+rm -f "$OUT/dc/cpp_results_vk.csv" "$OUT/tight/cpp_results_vk.csv"
 # The CPU pass: the driver against LBFGSpp, in its own process so neither
 # disturbs the other's timing.
 # delta 1e-3: the parameters cloth-dynamics' BackwardTaskSolver uses.

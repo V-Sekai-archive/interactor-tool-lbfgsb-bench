@@ -260,8 +260,9 @@ The `bench` workflow runs `run.sh` on ubuntu-24.04 with Ubuntu clang 18.1.3
 exact iteration and evaluation match against LBFGSpp, and the same final
 objectives to the last printed digit as the Apple clang 21 / arm64 run above:
 the emitted kernels' arithmetic does not depend on the compiler or the
-platform. The Azure runner has no Vulkan device, so its GPU pass is skipped; its
-wall times are 1.2x-2.1x the M2 Pro's (fewer repetitions, shared hardware).
+platform. The Azure runner has neither `slangc` nor a Vulkan device, so its GPU
+pass is skipped and its `results/` carry the CPU tables only; its wall times are
+1.2x-2.1x the M2 Pro's (fewer repetitions, shared hardware).
 
 ## The gate
 
