@@ -1,0 +1,8 @@
+# Build output and fetched dependencies.
+.deps/
+bench
+run.log
+
+# Generated problem data and its raw binaries.
+*.bin
+results/tight/problems/
