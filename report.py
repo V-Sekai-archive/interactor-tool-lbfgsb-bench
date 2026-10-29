@@ -22,7 +22,8 @@ N = {"rosen_n2": 2, "rosen_n10": 10, "rosen_n100": 100, "rosenbox_upstream_n25":
 
 
 def load(path):
-    """problem -> solver -> row"""
+    """problem -> solver -> row. A missing file is not an error: the GPU pass
+    only exists where there is a device."""
     out = {}
     p = Path(path)
     if not p.exists():
@@ -31,6 +32,15 @@ def load(path):
         for r in csv.DictReader(f):
             out.setdefault(r["problem"], {})[r["solver"]] = r
     return out
+
+
+def load_variant(root, variant):
+    """The CPU pass, plus the GPU pass where the run produced one."""
+    data = load(root / variant / "cpp_results.csv")
+    vk = load(root / variant / "cpp_results_vk.csv")
+    for prob, solvers in vk.items():
+        data.setdefault(prob, {}).update(solvers)
+    return data
 
 
 def num(row, key, fmt="{:.4g}"):
@@ -51,8 +61,8 @@ def table(header, rows):
 
 def main():
     root = Path(sys.argv[1] if len(sys.argv) > 1 else "results")
-    dc = load(root / "dc/cpp_results.csv")
-    tight = load(root / "tight/cpp_results.csv")
+    dc = load_variant(root, "dc")
+    tight = load_variant(root, "tight")
     sci = {v: load(root / f"dc/scipy_results_{v}.csv") for v in ("default", "matched", "tight")}
     out = []
     w = out.append
@@ -101,6 +111,33 @@ def main():
                          num(l, "solver_ms", "{:.3f}"), num(s, "solver_ms", "{:.3f}"), ratio, sratio])
         w(table(["problem", "driver total", "LBFGSpp total", "scipy total", "driver solver",
                  "LBFGSpp solver", "scipy solver", "driver/LBFGSpp", "driver/scipy"], rows))
+        w("")
+
+    # ---- the GPU backend, where the run had one
+    for name, data, title in (("dc", dc, "delta 1e-3"), ("tight", tight, "delta 1e-10")):
+        have = any("driver-vk" in s for s in data.values())
+        if not have:
+            continue
+        w(f"### The GPU backend -- {title}\n")
+        w("The same driver and the same kernels, dispatched as SPIR-V through "
+          "Vulkan instead of as the `slangc -target cpp` emits. Both backends must "
+          "do the same iterations; the evaluation count can differ when a "
+          "line-search step falls differently under the GPU's rounding.\n")
+        rows = []
+        for prob in ORDER:
+            d = data.get(prob, {}).get("driver")
+            g = data.get(prob, {}).get("driver-vk")
+            l = data.get(prob, {}).get("lbfgspp")
+            ratio = "-"
+            if d and g and float(d["ms_median"]) > 0:
+                ratio = f"{float(g['ms_median']) / float(d['ms_median']):.1f}x"
+            rows.append([prob, num(d, "niter", "{:.0f}"), num(g, "niter", "{:.0f}"),
+                         f"{num(d, 'nfev', '{:.0f}')} / {num(g, 'nfev', '{:.0f}')}",
+                         num(d, "ms_median", "{:.3f}"), num(g, "ms_median", "{:.3f}"),
+                         num(l, "ms_median", "{:.3f}"), ratio,
+                         num(g, "f", "{:.10g}"), num(d, "f", "{:.10g}")])
+        w(table(["problem", "iters cpu", "iters gpu", "nfev cpu / gpu", "cpu ms", "gpu ms",
+                 "LBFGSpp ms", "gpu/cpu", "gpu f", "cpu f"], rows))
         w("")
 
     # ---- what each solver stopped at

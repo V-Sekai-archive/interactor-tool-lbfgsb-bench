@@ -27,7 +27,6 @@ def load(path):
     out = {}
     p = Path(path)
     if not p.exists():
-        FAILS.append(f"missing {p}")
         return out
     with p.open() as f:
         for r in csv.DictReader(f):
@@ -35,12 +34,23 @@ def load(path):
     return out
 
 
+def load_variant(root, variant):
+    """The CPU pass, plus the GPU pass where the run produced one."""
+    data = load(root / variant / "cpp_results.csv")
+    if not data:
+        FAILS.append(f"missing {root / variant / 'cpp_results.csv'}")
+    for prob, solvers in load(root / variant / "cpp_results_vk.csv").items():
+        data.setdefault(prob, {}).update(solvers)
+    return data
+
+
 def main():
     root = Path(sys.argv[1] if len(sys.argv) > 1 else "results")
     exact = 0
+    vk_exact = 0
     pairs = 0
     for variant in ("dc", "tight"):
-        data = load(root / variant / "cpp_results.csv")
+        data = load_variant(root, variant)
         for prob, solvers in sorted(data.items()):
             d, l = solvers.get("driver"), solvers.get("lbfgspp")
             if d is None or l is None:
@@ -48,7 +58,7 @@ def main():
                 continue
             pairs += 1
             tag = f"{variant}/{prob}"
-            for name, row in (("driver", d), ("LBFGSpp", l)):
+            for name, row in (("driver", d), ("lbfgspp", l)):
                 if not row["note"].startswith("CONVERGED"):
                     FAILS.append(f"{tag}: {name} did not converge ({row['note']})")
             di, li = int(d["niter"]), int(l["niter"])
@@ -64,10 +74,37 @@ def main():
             if dpg > max(1e-4, 4.0 * lpg):
                 FAILS.append(f"{tag}: projected gradient {dpg!r} vs {lpg!r} (driver 4x worse and above 1e-4)")
 
+            # The GPU backend, where the run has one. It is the same driver and
+            # the same kernels, but a different instruction stream, so it is
+            # held to the tolerance contract-lbfgsb's own Gate 5 G2 applies to
+            # a GPU result (iterations within max(2, 25%), f within 1e-3
+            # relative) rather than to bit-equality with the CPU. The exact
+            # matches are counted and reported.
+            g = solvers.get("driver-vk")
+            if g is None:
+                continue
+            if not g["note"].startswith("CONVERGED"):
+                FAILS.append(f"{tag}: driver-vk did not converge ({g['note']})")
+                continue
+            gi = int(g["niter"])
+            if gi > 1.25 * di + 2 or di > 1.25 * gi + 2:
+                FAILS.append(f"{tag}: driver-vk {gi} iterations vs the CPU driver's {di}, outside max(2, 25%)")
+            gf = float(g["f"])
+            if abs(gf - df) > 1e-3 * max(1.0, abs(df)):
+                FAILS.append(f"{tag}: driver-vk f {gf!r} vs the CPU driver's {df!r}, more than 1e-3 relative")
+            if gi == di and int(g["nfev"]) == dn:
+                vk_exact += 1
+            elif gi != di or int(g["nfev"]) != dn:
+                print(f"note {tag}: driver-vk did {gi} iterations and {g['nfev']} evaluations, "
+                      f"the CPU driver {di} and {dn}")
+
     if pairs and exact * 2 < pairs:
         FAILS.append(f"only {exact}/{pairs} problem/setting pairs matched iteration and evaluation counts exactly")
 
     print(f"{exact}/{pairs} problem/setting pairs matched LBFGSpp's iteration and evaluation counts exactly")
+    if vk_exact:
+        print(f"{vk_exact}/{pairs} problem/setting pairs had the GPU backend match the CPU driver's "
+              f"iteration and evaluation counts exactly")
     for f in FAILS:
         print(f"FAIL {f}")
     if FAILS:
