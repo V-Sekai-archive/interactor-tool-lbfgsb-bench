@@ -1,0 +1,10 @@
+host: Darwin 25.6.0 arm64
+cpu: Apple M2 Pro
+compiler: Apple clang version 21.0.0 (clang-2100.1.1.101)
+python3: Python 3.9.6
+numpy: 2.0.2
+scipy: 1.13.1
+LBFGSpp: 0.3.0 (interactor-aria-lbfgspp thirdparty/LBFGSpp, 15e37f49bafd1b6908170f615002f1d638103c9d)
+Eigen: interactor-aria-lbfgspp thirdparty/eigen, 15e37f49bafd1b6908170f615002f1d638103c9d
+contract-lbfgsb: 5fe35817f02b4ad7bc552556295d4636af65cea6
+contract-guest-runtime: 1d8341825ac6fcfa8b8b2a11ae908e5d6aa71b33

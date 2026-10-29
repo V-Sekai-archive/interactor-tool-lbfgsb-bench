@@ -1,0 +1,10 @@
+problem,solver,niter,nfev,f,pg,xstar_err,ms_median,ms_min,ms_max,note
+rosen_n2               scipy-default niter=13    nfev=20    f=0.05059609838 pg=6.16e-07 xerr=nan  median    0.614 ms (solver-only    0.472)  [min    0.530 max    0.747] fg=7.1 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_
+rosen_n10              scipy-default niter=49    nfev=66    f=21.94305918 pg=0.00213 xerr=nan  median    1.630 ms (solver-only    1.203)  [min    1.565 max    1.823] fg=6.5 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+rosen_n100             scipy-default niter=41    nfev=47    f=118.8111183 pg=0.00048 xerr=nan  median    1.654 ms (solver-only    1.350)  [min    1.551 max    1.797] fg=6.5 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+rosenbox_upstream_n25  scipy-default niter=13    nfev=14    f=360.2835856 pg=8.7e-06 xerr=nan  median    0.609 ms (solver-only    0.334)  [min    0.590 max    0.823] fg=19.6 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_
+boxqp_n1000            scipy-default niter=11    nfev=12    f=-1932.985351 pg=0.000189 xerr=8.4e-05  median    3.031 ms (solver-only    2.929)  [min    2.930 max    3.239] fg=8.5 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+rosen_n1000            scipy-default niter=42    nfev=48    f=1009.718305 pg=0.0065 xerr=nan  median    6.283 ms (solver-only    5.807)  [min    6.076 max   10.317] fg=9.9 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+boxqp_n10000           scipy-default niter=11    nfev=12    f=-19316.06836 pg=0.000192 xerr=8.8e-05  median   27.218 ms (solver-only   26.932)  [min   26.107 max   29.946] fg=23.8 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+# logreg_n1000_m4000: python f(x0)=0.6931471805599454 ginf=np.float64(0.02358567477405914) f(0.1)=0.9812062945270152 | C++ f(x0)=0.6931471805599603 ginf=0.02358567477405914 f(0.1)=0.981206294526977 -> AGREE
+logreg_n1000_m4000     scipy-default niter=30    nfev=32    f=0.157419961 pg=5.71e-06 xerr=nan  median   48.586 ms (solver-only    5.476)  [min   48.480 max   52.337] fg=1347.2 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_

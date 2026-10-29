@@ -1,0 +1,2 @@
+16/16 problem/setting pairs matched LBFGSpp's iteration and evaluation counts exactly
+OK: the driver reproduces LBFGSpp's work and result within tolerance

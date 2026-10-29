@@ -1,0 +1,10 @@
+problem,solver,niter,nfev,f,pg,xstar_err,ms_median,ms_min,ms_max,note
+rosen_n2               scipy-tight   niter=13    nfev=20    f=0.05059609838 pg=6.16e-07 xerr=nan  median    0.518 ms (solver-only    0.376)  [min    0.501 max    0.704] fg=7.1 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_
+rosen_n10              scipy-tight   niter=52    nfev=69    f=21.94305917 pg=4.79e-06 xerr=nan  median    1.687 ms (solver-only    1.243)  [min    1.613 max    1.841] fg=6.4 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_
+rosen_n100             scipy-tight   niter=43    nfev=49    f=118.8111183 pg=9.64e-05 xerr=nan  median    1.653 ms (solver-only    1.331)  [min    1.598 max    1.800] fg=6.6 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+rosenbox_upstream_n25  scipy-tight   niter=13    nfev=14    f=360.2835856 pg=8.7e-06 xerr=nan  median    0.644 ms (solver-only    0.359)  [min    0.608 max    0.788] fg=20.4 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_
+boxqp_n1000            scipy-tight   niter=14    nfev=15    f=-1932.985352 pg=1.78e-05 xerr=2.3e-06  median    3.366 ms (solver-only    3.238)  [min    3.159 max    3.438] fg=8.5 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+rosen_n1000            scipy-tight   niter=45    nfev=51    f=1009.718305 pg=0.000115 xerr=nan  median    6.712 ms (solver-only    6.223)  [min    6.442 max   10.756] fg=9.6 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+boxqp_n10000           scipy-tight   niter=14    nfev=15    f=-19316.06836 pg=1.75e-05 xerr=2.2e-06  median   28.497 ms (solver-only   28.125)  [min   27.963 max   31.820] fg=24.8 us  0:CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR
+# logreg_n1000_m4000: python f(x0)=0.6931471805599454 ginf=np.float64(0.02358567477405914) f(0.1)=0.9812062945270152 | C++ f(x0)=0.6931471805599603 ginf=0.02358567477405914 f(0.1)=0.981206294526977 -> AGREE
+logreg_n1000_m4000     scipy-tight   niter=30    nfev=32    f=0.157419961 pg=5.71e-06 xerr=nan  median   49.031 ms (solver-only    5.861)  [min   48.842 max   52.358] fg=1349.1 us  0:CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_
