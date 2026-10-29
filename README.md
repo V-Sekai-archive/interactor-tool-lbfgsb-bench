@@ -253,7 +253,61 @@ parallelize the Cauchy breakpoint sweep and the subspace gather/scatter, or run
 them on the CPU and keep the GPU for the parallel ones. `multi_dot` already
 shows what the GPU does when a kernel has real parallelism to give it.
 
-### 6. The same counts on another compiler and platform
+### 6. Parallelizing the Cauchy kernel: what it costs, and why it was not kept
+
+The recommendation above was acted on — `lb_cauchy` was rewritten as a 256-thread
+SPIR-V kernel (`Drape.SlangCodegen.LbCauchy`) with the one-thread form kept as
+`lb_cauchy_serial` for the cpp target, so the in-guest CPU path is untouched
+(the emitted `lb_cauchy_serial.slang` is byte-identical to the retired
+`lb_cauchy.slang`). Parallelized: the `xcp` copy, the breakpoints (256 threads
+compute, thread 0 compacts in index order, so `iset` is the same array), and the
+sort. The sweep stayed on thread 0. Measured through this harness's `--micro`,
+one `lb_cauchy` dispatch:
+
+| variant | n=1000 | n=10000 | the gate |
+|---|---|---|---|
+| the one-thread kernel | 3759 us | 38728 us | pass |
+| 256 threads, heapsort kept on thread 0 | 3531 us | 37964 us | pass |
+| 256 threads, sort replaced by a rank pass | 2968 us | 37947 us | **fail** |
+
+**The safe half buys 6%.** The phase decomposition says why: of the one-thread
+kernel's 3759 us at n=1000, the heapsort is ~1950, the sweep ~1117 and the
+`Wᵀd`/`dᵀd` reductions ~960. Only the first is worth parallelizing, and the
+serial tail that remains (2720 us) is what the 3531 us row is made of.
+
+**The part worth parallelizing cannot be parallelized safely.** A one-thread
+heapsort of `nord` elements is `nord·log nord` *dependent* gathers through
+`wk[iset[ordb + ·]]` — a global round trip each — and replacing it with a rank
+pass over contiguously gathered keys makes that phase 4x faster (~1950 us to
+486 us). But the rank pass is **stable** (equal breakpoints keep their index
+order) while the heapsort is not, and on these problems that is not a detail:
+the sweep's crossing order changes, the trajectory flips, and `rosen_n10` tight
+ends at f = 285.9 against the CPU driver's 21.9. Forcing the heapsort path in the
+same binary makes all sixteen pairs agree again (13/16 exact), which isolates the
+divergence to the tie order and nothing else. This harness's gate is right to
+reject it: a faster kernel that answers a different question is not a faster
+solver. (LBFGSpp itself sorts `(t, i)` pairs, so its ties *are* index-ordered —
+the stable order is arguably the more faithful one. Changing the solver's tie
+behaviour is a decision for the repository, not a side effect of a performance
+change, so it is left where it is.)
+
+Two things learned on the way, both recorded because they cost time:
+
+- **A barrier must cover the memory the kernel exchanges through.**
+  `GroupMemoryBarrierWithGroupSync` orders *workgroup* memory, which is what
+  `lb_pg_inf` needs (it exchanges through `s_m`). A kernel that exchanges through
+  global buffers needs `AllMemoryBarrierWithGroupSync`, or thread 0 reads stale
+  values and the sort produces a wrong order.
+- **Workgroup memory is not automatically faster than per-thread arrays.**
+  Putting the sweep's four 32-float vectors in `groupShared` measured 3206 us
+  against 2937 us for the per-thread arrays at n=1000.
+
+So the conclusion above stands, and is now measured rather than argued: the
+Cauchy kernel is serial-bound and the two sequential kernels should run on the
+CPU, or the tie behaviour has to change on purpose before its sort can be
+parallelized.
+
+### 7. The same counts on another compiler and platform
 
 The `bench` workflow runs `run.sh` on ubuntu-24.04 with Ubuntu clang 18.1.3
 (x86_64) and uploads its results as an artifact. It reports the same 16/16
