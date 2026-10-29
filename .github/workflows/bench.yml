@@ -1,0 +1,50 @@
+name: bench
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compiler
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang
+      - name: Python
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -q --upgrade pip
+          .venv/bin/pip install -q numpy scipy
+      - name: Run the benchmark and its gate
+        env:
+          CXX: clang++
+          PY: .venv/bin/python
+          REPS_SMALL: "5"
+          REPS_BIG: "3"
+        run: ./run.sh
+      - name: Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: |
+            results/report.md
+            results/check.log
+            results/environment.txt
+            results/dc/cpp_results.csv
+            results/tight/cpp_results.csv
+            results/dc/scipy_results_default.csv
+            results/dc/scipy_results_matched.csv
+            results/dc/scipy_results_tight.csv
+            results/dc/bench.log
+            results/tight/bench.log
