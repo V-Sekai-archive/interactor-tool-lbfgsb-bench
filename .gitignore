@@ -6,3 +6,6 @@ run.log
 # Generated problem data and its raw binaries.
 *.bin
 results/tight/problems/
+
+# Emitted SPIR-V (regenerated from the dependency's .slang).
+results/spv/

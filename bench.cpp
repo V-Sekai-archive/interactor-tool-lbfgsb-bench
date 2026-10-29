@@ -36,6 +36,8 @@
 #include GUEST_LBFGSB_H
 #include GUEST_VEC_CPU_H
 
+#include "vec_vk.h"
+
 using Vec = Eigen::VectorXd;
 using Clock = std::chrono::steady_clock;
 static const double INF = std::numeric_limits<double>::infinity();
@@ -230,9 +232,12 @@ static double median(std::vector<double> v) {
 }
 
 // --------------------------------------------------- solver A: the driver
-// guest/drape/lbfgsb.cpp over vec_cpu.cpp: the Lean-emitted kernels, float32
-// vectors, double scalars, reverse communication.
-static Out run_driver(const Problem &p, int m, double delta, int maxit, int reps) {
+// guest/drape/lbfgsb.cpp over vec_cpu.cpp (the Lean-emitted kernels as C++, on
+// the CPU) or over vec_vk.cpp (the same kernels as SPIR-V, on the GPU). Both
+// are the same driver; only the lbv::Vec backend differs.
+enum class Backend { Cpu, Vk };
+
+static Out run_driver(const Problem &p, int m, double delta, int maxit, int reps, Backend be, VecVk *vk) {
 	Out o;
 	std::vector<double> times;
 	for (int r = 0; r < reps + 1; r++) {
@@ -243,8 +248,9 @@ static Out run_driver(const Problem &p, int m, double delta, int maxit, int reps
 			lb[i] = std::isinf(p.lb[i]) ? (p.lb[i] > 0 ? INFINITY : -INFINITY) : (float)p.lb[i];
 			ub[i] = std::isinf(p.ub[i]) ? (p.ub[i] > 0 ? INFINITY : -INFINITY) : (float)p.ub[i];
 		}
-		VecCpu v;
-		Lbfgsb s(v);
+		VecCpu cpu;
+		lbv::Vec *v = be == Backend::Cpu ? static_cast<lbv::Vec *>(&cpu) : static_cast<lbv::Vec *>(vk);
+		Lbfgsb s(*v);
 		LbfgsbParams pr;
 		pr.m = m;
 		pr.delta = delta;
@@ -419,15 +425,126 @@ static void row(FILE *csv, const Problem &p, const char *solver, const Out &o, d
 				 o.ms_max, fg_us, o.note.c_str());
 }
 
+// ---------------------------------------------------------------- micro
+// Per-kernel cost, CPU (the slangc cpp emits) against GPU (the same kernels
+// as SPIR-V), with the submit cost amortised: one phase holds `ops` identical
+// dispatches, so (phase time / ops) is the kernel's own cost.
+static void micro(const std::string &spv_dir, uint32_t n, int ops_per_phase) {
+	using lbv::Op;
+	std::string err;
+	VecCpu cpu;
+	if (!cpu.setup(n, 10, err)) {
+		std::printf("cpu setup failed: %s\n", err.c_str());
+		return;
+	}
+	VecVk vk;
+	const bool have_vk = vk.open(spv_dir, err);
+	if (have_vk && !vk.setup(n, 10, err)) {
+		std::printf("gpu setup failed: %s\n", err.c_str());
+		return;
+	}
+	const double floor_us = have_vk ? vk.empty_submit_us() : 0.0;
+	std::printf("# micro: n=%u, %d dispatches per phase, mcap 10\n", n, ops_per_phase);
+	if (have_vk) {
+		std::printf("# gpu: %s, empty submit+fence %.1f us\n", vk.device_name().c_str(), floor_us);
+	}
+
+	struct Case {
+		const char *name;
+		std::vector<Op> ops;
+	};
+	std::vector<Case> cases = {
+		{ "box_project", { lbv::box_project(lbv::X) } },
+		{ "pg_inf", { lbv::pg_inf(lbv::X, lbv::G, lbv::SC_PG) } },
+		{ "step_max", { lbv::step_max(lbv::X, lbv::D, lbv::SC_SMAX) } },
+		{ "multi_dot(10)", { lbv::multi_dot(lbv::SM, 10, lbv::X, lbv::DOTS, 0) } },
+		{ "saxpby", { lbv::saxpby(lbv::D, lbv::X, lbv::XP, 1.0f, -1.0f) } },
+		{ "ring_store", { lbv::ring_store() } },
+		{ "compact", { lbv::compact(0) } },
+		{ "cauchy", { lbv::cauchy() } },
+		{ "subspace(10)", { lbv::subspace(10) } },
+	};
+	for (auto &c : cases) {
+		std::vector<Op> phase;
+		phase.reserve(ops_per_phase);
+		for (int i = 0; i < ops_per_phase; ++i) phase.push_back(c.ops[0]);
+		for (lbv::Vec *v : { static_cast<lbv::Vec *>(&cpu), static_cast<lbv::Vec *>(&vk) }) {
+			if (v == static_cast<lbv::Vec *>(&vk) && !have_vk) continue;
+			// Finite, non-zero state: a kernel that reads zeros or NaNs would
+			// not be timed on the arithmetic the solver gives it.
+			std::vector<float> x(n, 0.1f), g(n, 0.01f), lb(n, -1.0f), ub(n, 1.0f);
+			for (uint32_t i = 0; i < n; i += 7) x[i] = 0.5f;
+			v->upload(lbv::X, x.data(), n);
+			v->upload(lbv::G, g.data(), n);
+			v->upload(lbv::LB, lb.data(), n);
+			v->upload(lbv::UB, ub.data(), n);
+			v->upload(lbv::D, x.data(), n);
+			v->upload(lbv::XP, x.data(), n);
+			v->upload(lbv::SM, std::vector<float>(size_t(n) * 10, 0.02f).data(), size_t(n) * 10);
+			if (!v->run(phase)) {
+				std::printf("%-16s %-4s FAILED: %s\n", c.name, v->name(), v->error().c_str());
+				continue;
+			}
+			std::vector<double> times;
+			for (int r = 0; r < 3; ++r) {
+				const auto t0 = Clock::now();
+				if (!v->run(phase)) break;
+				const auto t1 = Clock::now();
+				times.push_back(std::chrono::duration<double, std::micro>(t1 - t0).count());
+			}
+			if (times.empty()) continue;
+			std::sort(times.begin(), times.end());
+			const double per_op = times[times.size() / 2] / ops_per_phase;
+			std::printf("%-16s %-4s %10.2f us/dispatch", c.name, v->name(), per_op);
+			if (v->name()[0] == 'v') {
+				// The submit floor is paid once per phase, not per dispatch.
+				std::printf("  (%.2f us of kernel work; %.1f us submit/phase amortised over %d)",
+							per_op - floor_us / ops_per_phase, floor_us, ops_per_phase);
+			}
+			std::printf("\n");
+		}
+	}
+}
+
 int main(int argc, char **argv) {
+	if (argc > 2 && std::strcmp(argv[1], "--micro") == 0) {
+		const uint32_t n = argc > 2 ? uint32_t(std::atoi(argv[3])) : 1000u;
+		const int ops = argc > 3 ? std::atoi(argv[4]) : 50;
+		micro(argv[2], n ? n : 1000u, ops ? ops : 50);
+		return 0;
+	}
 	if (argc < 2) {
-		std::fprintf(stderr, "usage: %s <outdir> [reps_small] [reps_big] [delta]\n", argv[0]);
+		std::fprintf(stderr, "usage: %s <outdir> [reps_small] [reps_big] [delta] [spv_dir] [--vk]\n", argv[0]);
+		std::fprintf(stderr, "  --vk: run only the GPU backend, into cpp_results_vk.csv\n");
 		return 2;
 	}
 	const std::string out = argv[1];
 	const int reps_small = argc > 2 ? std::atoi(argv[2]) : 20;
 	const int reps_big = argc > 3 ? std::atoi(argv[3]) : 5;
 	const double delta = argc > 4 ? std::atof(argv[4]) : 1e-3;
+	const std::string spv_dir = argc > 5 ? argv[5] : "";
+	bool vk_only = false;
+	for (int i = 5; i < argc; ++i) {
+		if (std::strcmp(argv[i], "--vk") == 0) vk_only = true;
+	}
+	if (vk_only && spv_dir.empty()) {
+		std::fprintf(stderr, "--vk needs an spv directory\n");
+		return 2;
+	}
+
+	VecVk vk;
+	bool have_vk = false;
+	if (!spv_dir.empty()) {
+		std::string err;
+		if (vk.open(spv_dir, err)) {
+			have_vk = true;
+			std::printf("# gpu: %s (Vulkan via %s)\n", vk.device_name().c_str(), spv_dir.c_str());
+			std::printf("# gpu: empty submit+fence %.1f us\n", vk.empty_submit_us());
+		} else {
+			std::printf("# gpu: not run (%s)\n", err.c_str());
+		}
+	}
+	if (vk_only && !have_vk) return 1;
 	std::string mk = "mkdir -p " + out + "/problems";
 	if (std::system(mk.c_str()) != 0) return 2;
 
@@ -436,7 +553,7 @@ int main(int argc, char **argv) {
 	probs.push_back(make_logreg(1000, 4000, 1e-4, out + "/logreg_X.bin", out + "/logreg_y.bin"));
 	for (const auto &p : probs) dump_problem(out + "/problems", p);
 
-	const std::string csvpath = out + "/cpp_results.csv";
+	const std::string csvpath = out + (vk_only ? "/cpp_results_vk.csv" : "/cpp_results.csv");
 	FILE *csv = std::fopen(csvpath.c_str(), "w");
 	std::fprintf(csv, "problem,solver,niter,nfev,f,pg,xstar_err,ms_median,ms_min,ms_max,fg_us,solver_ms,note\n");
 	std::printf("problem,solver,niter,nfev,f,pg,xstar_err,ms_median,ms_min,ms_max,fg_us,solver_ms,note\n");
@@ -446,7 +563,12 @@ int main(int argc, char **argv) {
 		// heavy problems do not dominate the run.
 		const int calls = p.n >= 1000 ? 200 : 20000;
 		const double fg_us = time_fg_us(p, calls);
-		Out a = run_driver(p, 10, delta, 20000, reps);
+		if (vk_only) {
+			Out g = run_driver(p, 10, delta, 20000, reps, Backend::Vk, &vk);
+			row(csv, p, "driver-vk", g, fg_us);
+			continue;
+		}
+		Out a = run_driver(p, 10, delta, 20000, reps, Backend::Cpu, nullptr);
 		row(csv, p, "driver", a, fg_us);
 		Out b = run_lbfgspp(p, 10, delta, 20000, reps);
 		row(csv, p, "lbfgspp", b, fg_us);

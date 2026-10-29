@@ -19,7 +19,7 @@ jobs:
       - name: Compiler
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq clang
+          sudo apt-get install -y -qq clang libvulkan-dev
       - name: Python
         run: |
           python3 -m venv .venv

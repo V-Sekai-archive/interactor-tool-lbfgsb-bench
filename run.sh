@@ -58,23 +58,59 @@ INC="-I$DEPS/interactor-aria-lbfgspp/thirdparty/LBFGSpp/include"
 INC="$INC -I$DEPS/interactor-aria-lbfgspp/thirdparty/eigen"
 INC="$INC -I$DEPS/contract-guest-runtime/guest/avbd/slang-rt"
 
+# The GPU path needs the Vulkan headers and loader. On macOS Homebrew keeps
+# them outside the default search path; on Linux the system ones are found.
+VKINC=""
+if [ -f /opt/homebrew/include/vulkan/vulkan.h ]; then
+	VKINC="-I/opt/homebrew/include -L/opt/homebrew/lib"
+fi
+VK="-lvulkan"
+
+# The kernels as SPIR-V, from the .slang that contract-lbfgsb commits (its
+# gen.sh's spirv step). Without slangc the benchmark runs the CPU backend only.
+SPV=""
+if command -v "${SLANGC:-slangc}" >/dev/null 2>&1; then
+	SPV="$OUT/spv"
+	mkdir -p "$SPV"
+	for k in lb_box_project lb_pg_inf lb_step_max lb_multi_dot lb_compact lb_ring_store lb_apply_m lb_cauchy \
+		lb_subspace saxpby; do
+		"${SLANGC:-slangc}" -target spirv -profile sm_6_5 -stage compute -entry main -fp-mode precise \
+			-o "$SPV/$k.spv" "$DEPS/contract-lbfgsb/kernels/drape/slang/$k.slang"
+	done
+else
+	echo "no slangc: the GPU backend is skipped"
+fi
+
 # -ffp-contract=off: the guest builds these same files with it (contract-lbfgsb
 # tests/lbfgsb_driver/build.sh), so the CPU results here match the guest's.
 $CXX -O2 -std=c++17 -ffp-contract=off -DNDEBUG -Wall -Wno-unused-function -Wno-unused-lambda-capture \
-	$INC \
+	$INC $VKINC \
 	-DGUEST_LBFGSB_H="\"$DEPS/contract-lbfgsb/guest/drape/lbfgsb.h\"" \
 	-DGUEST_VEC_CPU_H="\"$DEPS/contract-lbfgsb/guest/drape/vec_cpu.h\"" \
-	bench.cpp \
+	bench.cpp vec_vk.cpp \
 	"$DEPS/contract-lbfgsb/guest/drape/lbfgsb.cpp" \
 	"$DEPS/contract-lbfgsb/guest/drape/vec_cpu.cpp" \
-	-o bench
+	$VK -o bench
 
 $PY gen_data.py "$OUT/dc" 1000 4000
 $PY gen_data.py "$OUT/tight" 1000 4000
+# The CPU pass: the driver against LBFGSpp, in its own process so neither
+# disturbs the other's timing.
 # delta 1e-3: the parameters cloth-dynamics' BackwardTaskSolver uses.
 ./bench "$OUT/dc" "$REPS_SMALL" "$REPS_BIG" 1e-3 > "$OUT/dc/bench.log"
 # delta 1e-10: the same solvers with the function-difference test out of the way.
 ./bench "$OUT/tight" "$REPS_SMALL" "$REPS_BIG" 1e-10 > "$OUT/tight/bench.log"
+# The GPU pass, into its own file, where there is a device.
+if [ -n "$SPV" ]; then
+	if ./bench "$OUT/dc" "$REPS_SMALL" "$REPS_BIG" 1e-3 "$SPV" --vk > "$OUT/dc/bench_vk.log" 2>&1; then
+		./bench "$OUT/tight" "$REPS_SMALL" "$REPS_BIG" 1e-10 "$SPV" --vk > "$OUT/tight/bench_vk.log" 2>&1 || true
+	else
+		echo "no GPU device: the GPU pass is skipped"
+		rm -f "$OUT/dc/cpp_results_vk.csv" "$OUT/tight/cpp_results_vk.csv"
+	fi
+	# Per-kernel cost, CPU against GPU, with the submit amortised.
+	./bench --micro "$SPV" 1000 50 > "$OUT/micro.txt" 2>&1 || true
+fi
 
 for variant in default matched tight; do
 	$PY scipy_bench.py "$OUT/dc" "$REPS_SMALL" "$REPS_BIG" "$variant" > "$OUT/scipy_$variant.log"
