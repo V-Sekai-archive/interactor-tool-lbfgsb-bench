@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: If you use these measurements, cite this repository and the solver it measures.
+title: interactor-tool-lbfgsb-bench
+abstract: >-
+  A host-native benchmark of the L-BFGS-B that contract-lbfgsb writes in Lean and
+  emits through Slang (guest/drape/lbfgsb.cpp over vec_cpu.cpp, the Lean-emitted
+  kernels on the CPU), against traditional bounded quasi-Newton solvers of the
+  same type: LBFGSpp 0.3.0, the implementation the driver mirrors, and scipy's
+  Fortran L-BFGS-B 3.0 (Byrd, Lu, Nocedal and Zhu).
+
+
+  Eight bound-constrained problems, the five from contract-lbfgsb's own oracle
+  generator plus a chained Rosenbrock at n=1000, a box QP at n=10000 and a
+  logistic regression, are solved by all three solvers at two parameter settings
+  (delta 1e-3 and 1e-10). The benchmark reports iterations, objective evaluations,
+  wall time with the objective timed separately, and the objective and projected
+  gradient at each stopping point, and gates the run on the driver reproducing
+  LBFGSpp's work and result.
+authors:
+  - family-names: Lee
+    given-names: K. S. Ernest (iFire)
+    alias: iFire
+    email: 32321+fire@users.noreply.github.com
+    website: https://github.com/fire
+version: 0.1.0
+date-released: "2026-10-29"
+license: MIT
+repository-code: https://github.com/V-Sekai-fire/interactor-tool-lbfgsb-bench
+references:
+  - type: software
+    title: contract-lbfgsb
+    repository-code: https://github.com/V-Sekai-fire/contract-lbfgsb
+  - type: software
+    title: LBFGSpp
+    version: 0.3.0
+    repository-code: https://github.com/yixuan/LBFGSpp
+  - type: software
+    title: scipy
+    version: "1.13.1"
+    repository-code: https://github.com/scipy/scipy
