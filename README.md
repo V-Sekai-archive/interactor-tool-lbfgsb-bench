@@ -160,6 +160,16 @@ scipy's `ftol` and LBFGSpp's `delta` are not the same test, which is why the
 report carries three scipy variants: `default`, `matched` (`ftol` 1e-4, `gtol`
 1e-5, `maxcor` 10, `maxls` 20 — LBFGSpp-like) and `tight` (`ftol` 1e-12).
 
+### 4. The same counts on another compiler and platform
+
+The `bench` workflow runs `run.sh` on ubuntu-24.04 with Ubuntu clang 18.1.3
+(x86_64) and uploads its results as an artifact. It reports the same 16/16
+exact iteration and evaluation match against LBFGSpp, and the same final
+objectives to the last printed digit as the Apple clang 21 / arm64 run above:
+the emitted kernels' arithmetic does not depend on the compiler or the
+platform. The Azure runner's wall times are 1.2x-2.1x the M2 Pro's (fewer
+repetitions, shared hardware).
+
 ## The gate
 
 `check.py` fails the run if either solver stops without converging, if the
