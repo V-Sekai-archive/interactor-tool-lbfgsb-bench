@@ -1,26 +1,26 @@
 logreg_n1000_m4000     probe f(x0)=0.69314718056 |g|inf=0.0235856747741  f(0.1)=0.981206294527 |g|inf=0.0287150583281
 problem,solver,niter,nfev,f,pg,xstar_err,ms_median,ms_min,ms_max,fg_us,solver_ms,note
-rosen_n2               driver    niter=19    nfev=25    f=0.05062558722 pg=0.169 xerr=nan  median    0.061 ms (solver-only    0.060)  [min    0.059 max    0.079] fg=0.01 us  CONVERGED:delta
-rosen_n2               lbfgspp   niter=19    nfev=25    f=0.05060453614 pg=0.0903 xerr=nan  median    0.102 ms (solver-only    0.102)  [min    0.097 max    0.131] fg=0.01 us  CONVERGED:19
+rosen_n2               driver    niter=19    nfev=25    f=0.05062558722 pg=0.169 xerr=nan  median    0.060 ms (solver-only    0.059)  [min    0.059 max    0.084] fg=0.01 us  CONVERGED:delta
+rosen_n2               lbfgspp   niter=19    nfev=25    f=0.05060453614 pg=0.0903 xerr=nan  median    0.101 ms (solver-only    0.101)  [min    0.099 max    0.136] fg=0.01 us  CONVERGED:19
     max|x_driver - x_LBFGSpp| = 0.000162 (inf-norm of x 0.775)
-rosen_n10              driver    niter=11    nfev=12    f=32.79866173 pg=1.96 xerr=nan  median    0.042 ms (solver-only    0.041)  [min    0.041 max    0.050] fg=0.02 us  CONVERGED:delta
-rosen_n10              lbfgspp   niter=11    nfev=12    f=32.79866166 pg=1.96 xerr=nan  median    0.046 ms (solver-only    0.046)  [min    0.046 max    0.059] fg=0.02 us  CONVERGED:11
+rosen_n10              driver    niter=11    nfev=12    f=32.79866173 pg=1.96 xerr=nan  median    0.042 ms (solver-only    0.042)  [min    0.041 max    0.057] fg=0.02 us  CONVERGED:delta
+rosen_n10              lbfgspp   niter=11    nfev=12    f=32.79866166 pg=1.96 xerr=nan  median    0.050 ms (solver-only    0.050)  [min    0.046 max    0.144] fg=0.02 us  CONVERGED:11
     max|x_driver - x_LBFGSpp| = 6.76e-08 (inf-norm of x 0.5)
-rosen_n100             driver    niter=12    nfev=13    f=122.104946 pg=0.642 xerr=nan  median    0.450 ms (solver-only    0.447)  [min    0.425 max    0.547] fg=0.17 us  CONVERGED:delta
-rosen_n100             lbfgspp   niter=12    nfev=13    f=122.104946 pg=0.642 xerr=nan  median    0.101 ms (solver-only    0.098)  [min    0.093 max    0.183] fg=0.17 us  CONVERGED:12
+rosen_n100             driver    niter=12    nfev=13    f=122.104946 pg=0.642 xerr=nan  median    0.445 ms (solver-only    0.443)  [min    0.422 max    0.548] fg=0.17 us  CONVERGED:delta
+rosen_n100             lbfgspp   niter=12    nfev=13    f=122.104946 pg=0.642 xerr=nan  median    0.095 ms (solver-only    0.093)  [min    0.093 max    0.121] fg=0.17 us  CONVERGED:12
     max|x_driver - x_LBFGSpp| = 6.36e-08 (inf-norm of x 0.5)
-rosenbox_upstream_n25  driver    niter=10    nfev=11    f=360.284608 pg=0.435 xerr=nan  median    0.067 ms (solver-only    0.067)  [min    0.067 max    0.073] fg=0.02 us  CONVERGED:delta
-rosenbox_upstream_n25  lbfgspp   niter=10    nfev=11    f=360.2846081 pg=0.435 xerr=nan  median    0.051 ms (solver-only    0.051)  [min    0.051 max    0.058] fg=0.02 us  CONVERGED:10
+rosenbox_upstream_n25  driver    niter=10    nfev=11    f=360.284608 pg=0.435 xerr=nan  median    0.067 ms (solver-only    0.067)  [min    0.067 max    0.077] fg=0.02 us  CONVERGED:delta
+rosenbox_upstream_n25  lbfgspp   niter=10    nfev=11    f=360.2846081 pg=0.435 xerr=nan  median    0.051 ms (solver-only    0.051)  [min    0.048 max    0.059] fg=0.02 us  CONVERGED:10
     max|x_driver - x_LBFGSpp| = 7.36e-08 (inf-norm of x 4)
-boxqp_n1000            driver    niter=5     nfev=8     f=-1932.882068 pg=0.317 xerr=0.04  median    1.851 ms (solver-only    1.836)  [min    1.762 max    1.911] fg=1.88 us  CONVERGED:delta
-boxqp_n1000            lbfgspp   niter=5     nfev=8     f=-1932.882069 pg=0.317 xerr=0.04  median    0.475 ms (solver-only    0.460)  [min    0.443 max    0.596] fg=1.88 us  CONVERGED:5
+boxqp_n1000            driver    niter=5     nfev=8     f=-1932.882068 pg=0.317 xerr=0.04  median    1.854 ms (solver-only    1.840)  [min    1.735 max    1.905] fg=1.83 us  CONVERGED:delta
+boxqp_n1000            lbfgspp   niter=5     nfev=8     f=-1932.882069 pg=0.317 xerr=0.04  median    0.460 ms (solver-only    0.445)  [min    0.440 max    0.510] fg=1.83 us  CONVERGED:5
     max|x_driver - x_LBFGSpp| = 7.34e-07 (inf-norm of x 1)
-rosen_n1000            driver    niter=11    nfev=12    f=1013.039503 pg=1.53 xerr=nan  median    3.595 ms (solver-only    3.578)  [min    3.439 max    3.728] fg=1.39 us  CONVERGED:delta
-rosen_n1000            lbfgspp   niter=11    nfev=12    f=1013.039504 pg=1.53 xerr=nan  median    0.588 ms (solver-only    0.571)  [min    0.559 max    0.651] fg=1.39 us  CONVERGED:11
+rosen_n1000            driver    niter=11    nfev=12    f=1013.039503 pg=1.53 xerr=nan  median    3.577 ms (solver-only    3.560)  [min    3.456 max    3.709] fg=1.39 us  CONVERGED:delta
+rosen_n1000            lbfgspp   niter=11    nfev=12    f=1013.039504 pg=1.53 xerr=nan  median    0.627 ms (solver-only    0.610)  [min    0.620 max    0.639] fg=1.39 us  CONVERGED:11
     max|x_driver - x_LBFGSpp| = 7.59e-07 (inf-norm of x 0.5)
-boxqp_n10000           driver    niter=5     nfev=11    f=-19315.05483 pg=0.351 xerr=0.045  median   21.858 ms (solver-only   21.677)  [min   21.525 max   22.120] fg=16.54 us  CONVERGED:delta
-boxqp_n10000           lbfgspp   niter=5     nfev=11    f=-19315.05515 pg=0.351 xerr=0.045  median    4.460 ms (solver-only    4.278)  [min    4.405 max    4.667] fg=16.54 us  CONVERGED:5
+boxqp_n10000           driver    niter=5     nfev=11    f=-19315.05483 pg=0.351 xerr=0.045  median   21.614 ms (solver-only   21.281)  [min   21.413 max   21.697] fg=30.31 us  CONVERGED:delta
+boxqp_n10000           lbfgspp   niter=5     nfev=11    f=-19315.05515 pg=0.351 xerr=0.045  median    4.520 ms (solver-only    4.187)  [min    4.331 max    4.653] fg=30.31 us  CONVERGED:5
     max|x_driver - x_LBFGSpp| = 1.15e-05 (inf-norm of x 1)
-logreg_n1000_m4000     driver    niter=10    nfev=11    f=0.1595392702 pg=0.000497 xerr=nan  median   48.877 ms (solver-only    2.874)  [min   48.705 max   50.062] fg=4182.14 us  CONVERGED:delta
-logreg_n1000_m4000     lbfgspp   niter=10    nfev=11    f=0.1595392731 pg=0.000497 xerr=nan  median   46.989 ms (solver-only    0.986)  [min   46.699 max   47.791] fg=4182.14 us  CONVERGED:10
+logreg_n1000_m4000     driver    niter=10    nfev=11    f=0.1595392702 pg=0.000497 xerr=nan  median   49.479 ms (solver-only    3.781)  [min   48.499 max   50.640] fg=4154.45 us  CONVERGED:delta
+logreg_n1000_m4000     lbfgspp   niter=10    nfev=11    f=0.1595392731 pg=0.000497 xerr=nan  median   47.721 ms (solver-only    2.022)  [min   46.425 max   47.966] fg=4154.45 us  CONVERGED:10
     max|x_driver - x_LBFGSpp| = 2.9e-07 (inf-norm of x 1)

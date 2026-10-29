@@ -1,0 +1,13 @@
+# vk: Apple M2 Pro, minUniformBufferOffsetAlignment 16, param slot 64
+# gpu: Apple M2 Pro (Vulkan via /Users/ernest.lee/Desktop/stk-work/interactor-tool-lbfgsb-bench/results/spv)
+# gpu: empty submit+fence 26.4 us
+logreg_n1000_m4000     probe f(x0)=0.69314718056 |g|inf=0.0235856747741  f(0.1)=0.981206294527 |g|inf=0.0287150583281
+problem,solver,niter,nfev,f,pg,xstar_err,ms_median,ms_min,ms_max,fg_us,solver_ms,note
+rosen_n2               driver-vk niter=21    nfev=27    f=0.05059609148 pg=3.81e-06 xerr=nan  median   40.468 ms (solver-only   40.468)  [min   39.644 max   42.582] fg=0.00 us  CONVERGED:grad
+rosen_n10              driver-vk niter=40    nfev=45    f=21.94305743 pg=0.000166 xerr=nan  median  108.341 ms (solver-only  108.340)  [min  103.635 max  136.875] fg=0.02 us  CONVERGED:delta
+rosen_n100             driver-vk niter=42    nfev=48    f=118.8111182 pg=0.000429 xerr=nan  median  408.921 ms (solver-only  408.914)  [min  403.520 max  419.677] fg=0.14 us  CONVERGED:delta
+rosenbox_upstream_n25  driver-vk niter=13    nfev=34    f=360.2835856 pg=1.22e-05 xerr=nan  median   44.377 ms (solver-only   44.376)  [min   42.230 max   48.621] fg=0.04 us  CONVERGED:grad
+boxqp_n1000            driver-vk niter=11    nfev=14    f=-1932.985351 pg=0.000183 xerr=8.3e-05  median  436.250 ms (solver-only  436.228)  [min  435.369 max  438.368] fg=1.64 us  CONVERGED:grad
+rosen_n1000            driver-vk niter=43    nfev=49    f=1009.718305 pg=0.000347 xerr=nan  median 3423.221 ms (solver-only 3423.156)  [min 3410.642 max 3445.460] fg=1.33 us  CONVERGED:delta
+boxqp_n10000           driver-vk niter=11    nfev=17    f=-19316.06836 pg=0.000186 xerr=8.4e-05  median 4223.225 ms (solver-only 4222.962)  [min 4180.806 max 4253.460] fg=15.45 us  CONVERGED:grad
+logreg_n1000_m4000     driver-vk niter=17    nfev=18    f=0.1575052602 pg=0.000102 xerr=nan  median 1883.021 ms (solver-only 1806.812)  [min 1847.489 max 1890.978] fg=4233.82 us  CONVERGED:grad

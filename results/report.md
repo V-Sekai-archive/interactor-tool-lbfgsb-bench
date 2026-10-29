@@ -45,14 +45,14 @@ Median of the timed repetitions, in milliseconds. `solver` excludes the objectiv
 
 | problem | driver total | LBFGSpp total | scipy total | driver solver | LBFGSpp solver | scipy solver | driver/LBFGSpp | driver/scipy |
 |---|---|---|---|---|---|---|---|---|
-| rosen_n2 | 0.060 | 0.102 | 0.450 | 0.060 | 0.102 | 0.338 | 0.59x | 0.18x |
-| rosen_n10 | 0.042 | 0.046 | 1.535 | 0.041 | 0.046 | 1.132 | 0.90x | 0.04x |
-| rosen_n100 | 0.450 | 0.101 | 0.644 | 0.447 | 0.099 | 0.551 | 4.54x | 0.81x |
-| rosenbox_upstream_n25 | 0.067 | 0.051 | 0.567 | 0.067 | 0.051 | 0.330 | 1.32x | 0.20x |
-| boxqp_n1000 | 1.851 | 0.475 | 2.707 | 1.836 | 0.460 | 2.648 | 4.00x | 0.69x |
-| rosen_n1000 | 3.595 | 0.588 | 3.123 | 3.579 | 0.571 | 3.002 | 6.26x | 1.19x |
-| boxqp_n10000 | 21.858 | 4.460 | 24.473 | 21.677 | 4.278 | 24.302 | 5.07x | 0.89x |
-| logreg_n1000_m4000 | 48.877 | 46.989 | 28.908 | 2.873 | 0.986 | 5.635 | 2.91x | 0.51x |
+| rosen_n2 | 0.060 | 0.101 | 0.428 | 0.059 | 0.101 | 0.316 | 0.59x | 0.19x |
+| rosen_n10 | 0.042 | 0.050 | 1.527 | 0.042 | 0.050 | 1.120 | 0.83x | 0.04x |
+| rosen_n100 | 0.445 | 0.095 | 0.664 | 0.443 | 0.093 | 0.570 | 4.78x | 0.78x |
+| rosenbox_upstream_n25 | 0.067 | 0.051 | 0.551 | 0.067 | 0.051 | 0.310 | 1.31x | 0.22x |
+| boxqp_n1000 | 1.854 | 0.460 | 2.928 | 1.840 | 0.445 | 2.871 | 4.13x | 0.64x |
+| rosen_n1000 | 3.577 | 0.627 | 3.188 | 3.560 | 0.610 | 3.071 | 5.83x | 1.16x |
+| boxqp_n10000 | 21.614 | 4.520 | 24.642 | 21.281 | 4.187 | 24.478 | 5.08x | 0.87x |
+| logreg_n1000_m4000 | 49.480 | 47.721 | 28.800 | 3.780 | 2.022 | 5.600 | 1.87x | 0.68x |
 
 ### Wall time -- delta 1e-10 vs scipy at a near-machine ftol
 
@@ -60,14 +60,44 @@ Median of the timed repetitions, in milliseconds. `solver` excludes the objectiv
 
 | problem | driver total | LBFGSpp total | scipy total | driver solver | LBFGSpp solver | scipy solver | driver/LBFGSpp | driver/scipy |
 |---|---|---|---|---|---|---|---|---|
-| rosen_n2 | 0.056 | 0.086 | 0.518 | 0.056 | 0.086 | 0.376 | 0.65x | 0.15x |
-| rosen_n10 | 0.180 | 0.193 | 1.687 | 0.179 | 0.193 | 1.243 | 0.93x | 0.14x |
-| rosen_n100 | 1.683 | 0.443 | 1.653 | 1.676 | 0.437 | 1.331 | 3.84x | 1.26x |
-| rosenbox_upstream_n25 | 0.083 | 0.057 | 0.644 | 0.083 | 0.057 | 0.359 | 1.46x | 0.23x |
-| boxqp_n1000 | 3.614 | 0.726 | 3.366 | 3.591 | 0.703 | 3.238 | 5.11x | 1.11x |
-| rosen_n1000 | 17.703 | 3.532 | 6.712 | 17.628 | 3.458 | 6.223 | 5.10x | 2.83x |
-| boxqp_n10000 | 43.107 | 8.088 | 28.497 | 42.831 | 7.812 | 28.125 | 5.48x | 1.52x |
-| logreg_n1000_m4000 | 83.124 | 80.451 | 49.031 | 8.506 | 5.833 | 5.861 | 1.46x | 1.45x |
+| rosen_n2 | 0.051 | 0.087 | 0.532 | 0.051 | 0.086 | 0.393 | 0.59x | 0.13x |
+| rosen_n10 | 0.190 | 0.192 | 1.659 | 0.189 | 0.191 | 1.227 | 0.99x | 0.15x |
+| rosen_n100 | 1.801 | 0.471 | 1.654 | 1.794 | 0.465 | 1.340 | 3.86x | 1.34x |
+| rosenbox_upstream_n25 | 0.088 | 0.062 | 0.624 | 0.087 | 0.061 | 0.349 | 1.42x | 0.25x |
+| boxqp_n1000 | 3.960 | 0.855 | 3.366 | 3.936 | 0.831 | 3.241 | 4.74x | 1.21x |
+| rosen_n1000 | 18.238 | 3.353 | 6.747 | 18.173 | 3.288 | 6.285 | 5.53x | 2.89x |
+| boxqp_n10000 | 42.869 | 7.975 | 30.285 | 42.611 | 7.716 | 29.923 | 5.52x | 1.42x |
+| logreg_n1000_m4000 | 81.147 | 76.276 | 57.807 | 6.702 | 1.832 | 14.260 | 3.66x | 0.47x |
+
+### The GPU backend -- delta 1e-3
+
+The same driver and the same kernels, dispatched as SPIR-V through Vulkan instead of as the `slangc -target cpp` emits. Both backends must do the same iterations; the evaluation count can differ when a line-search step falls differently under the GPU's rounding.
+
+| problem | iters cpu | iters gpu | nfev cpu / gpu | cpu ms | gpu ms | LBFGSpp ms | gpu/cpu | gpu f | cpu f |
+|---|---|---|---|---|---|---|---|---|---|
+| rosen_n2 | 19 | 19 | 25 / 25 | 0.060 | 34.296 | 0.101 | 575.4x | 0.05063682831 | 0.05062558722 |
+| rosen_n10 | 11 | 11 | 12 / 12 | 0.042 | 32.106 | 0.050 | 764.4x | 32.79866133 | 32.79866173 |
+| rosen_n100 | 12 | 12 | 13 / 13 | 0.445 | 69.918 | 0.095 | 157.1x | 122.1049459 | 122.104946 |
+| rosenbox_upstream_n25 | 10 | 10 | 11 / 31 | 0.067 | 30.057 | 0.051 | 447.3x | 360.2846081 | 360.284608 |
+| boxqp_n1000 | 5 | 5 | 8 / 8 | 1.854 | 99.586 | 0.460 | 53.7x | -1932.882067 | -1932.882068 |
+| rosen_n1000 | 11 | 11 | 12 / 12 | 3.577 | 439.207 | 0.627 | 122.8x | 1013.039503 | 1013.039503 |
+| boxqp_n10000 | 5 | 5 | 11 / 11 | 21.614 | 991.959 | 4.520 | 45.9x | -19315.05481 | -19315.05483 |
+| logreg_n1000_m4000 | 10 | 10 | 11 / 11 | 49.480 | 753.469 | 47.721 | 15.2x | 0.1595392717 | 0.1595392702 |
+
+### The GPU backend -- delta 1e-10
+
+The same driver and the same kernels, dispatched as SPIR-V through Vulkan instead of as the `slangc -target cpp` emits. Both backends must do the same iterations; the evaluation count can differ when a line-search step falls differently under the GPU's rounding.
+
+| problem | iters cpu | iters gpu | nfev cpu / gpu | cpu ms | gpu ms | LBFGSpp ms | gpu/cpu | gpu f | cpu f |
+|---|---|---|---|---|---|---|---|---|---|
+| rosen_n2 | 21 | 21 | 27 / 27 | 0.051 | 40.468 | 0.087 | 795.1x | 0.05059609148 | 0.05059609148 |
+| rosen_n10 | 40 | 40 | 45 / 45 | 0.190 | 108.341 | 0.192 | 569.9x | 21.94305743 | 21.94305743 |
+| rosen_n100 | 43 | 42 | 49 / 48 | 1.801 | 408.921 | 0.471 | 227.1x | 118.8111182 | 118.8111182 |
+| rosenbox_upstream_n25 | 13 | 13 | 14 / 34 | 0.088 | 44.377 | 0.062 | 506.0x | 360.2835856 | 360.2835856 |
+| boxqp_n1000 | 11 | 11 | 14 / 14 | 3.960 | 436.250 | 0.855 | 110.2x | -1932.985351 | -1932.985351 |
+| rosen_n1000 | 43 | 43 | 49 / 49 | 18.238 | 3423.221 | 3.353 | 187.7x | 1009.718305 | 1009.718305 |
+| boxqp_n10000 | 11 | 11 | 17 / 17 | 42.869 | 4223.225 | 7.975 | 98.5x | -19316.06836 | -19316.06836 |
+| logreg_n1000_m4000 | 17 | 17 | 18 / 18 | 81.147 | 1883.021 | 76.276 | 23.2x | 0.1575052602 | 0.15750526 |
 
 ### Where each solver stopped
 

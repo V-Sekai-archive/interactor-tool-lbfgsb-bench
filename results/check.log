@@ -1,2 +1,6 @@
+note dc/rosenbox_upstream_n25: driver-vk did 10 iterations and 31 evaluations, the CPU driver 10 and 11
+note tight/rosen_n100: driver-vk did 42 iterations and 48 evaluations, the CPU driver 43 and 49
+note tight/rosenbox_upstream_n25: driver-vk did 13 iterations and 34 evaluations, the CPU driver 13 and 14
 16/16 problem/setting pairs matched LBFGSpp's iteration and evaluation counts exactly
+13/16 problem/setting pairs had the GPU backend match the CPU driver's iteration and evaluation counts exactly
 OK: the driver reproduces LBFGSpp's work and result within tolerance

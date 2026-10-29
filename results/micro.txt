@@ -1,0 +1,21 @@
+# vk: Apple M2 Pro, minUniformBufferOffsetAlignment 16, param slot 64
+# micro: n=1000, 50 dispatches per phase, mcap 10
+# gpu: Apple M2 Pro, empty submit+fence 24.1 us
+box_project      cpu        0.10 us/dispatch
+box_project      vk         6.26 us/dispatch  (5.78 us of kernel work; 24.1 us submit/phase amortised over 50)
+pg_inf           cpu        0.17 us/dispatch
+pg_inf           vk         8.60 us/dispatch  (8.12 us of kernel work; 24.1 us submit/phase amortised over 50)
+step_max         cpu        1.30 us/dispatch
+step_max         vk         8.71 us/dispatch  (8.23 us of kernel work; 24.1 us submit/phase amortised over 50)
+multi_dot(10)    cpu       64.58 us/dispatch
+multi_dot(10)    vk        33.55 us/dispatch  (33.07 us of kernel work; 24.1 us submit/phase amortised over 50)
+saxpby           cpu        0.07 us/dispatch
+saxpby           vk         6.78 us/dispatch  (6.30 us of kernel work; 24.1 us submit/phase amortised over 50)
+ring_store       cpu        0.30 us/dispatch
+ring_store       vk         5.87 us/dispatch  (5.39 us of kernel work; 24.1 us submit/phase amortised over 50)
+compact          cpu        0.01 us/dispatch
+compact          vk         6.25 us/dispatch  (5.76 us of kernel work; 24.1 us submit/phase amortised over 50)
+cauchy           cpu       16.92 us/dispatch
+cauchy           vk      3743.58 us/dispatch  (3743.10 us of kernel work; 24.1 us submit/phase amortised over 50)
+subspace(10)     cpu        0.06 us/dispatch
+subspace(10)     vk       161.49 us/dispatch  (161.01 us of kernel work; 24.1 us submit/phase amortised over 50)
